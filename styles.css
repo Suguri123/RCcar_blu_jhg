@@ -1,0 +1,548 @@
+:root {
+  --bg: #e0f2fe; /* Light baby blue */
+  --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  --panel: #ffffff;
+  --panel-2: #f0f9ff;
+  --ink: #0f172a; /* Slate 900 for high readability */
+  --muted: #475569; /* Slate 600 */
+  --primary: #3b82f6; /* Friendly Blue */
+  --primary-dark: #1d4ed8;
+  --success: #22c55e; /* Friendly Green */
+  --success-dark: #15803d;
+  --danger: #ef4444; /* Friendly Red */
+  --danger-dark: #b91c1c;
+  --yellow: #facc15; /* Cute Yellow */
+  --yellow-dark: #ca8a04;
+  --line: #cbd5e1; /* Slate 300 */
+  --shadow: #0f172a;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-gradient);
+  color: var(--ink);
+  font-family: 'Fredoka', 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell {
+  width: min(100%, 500px);
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-mark {
+  font-size: 22px;
+  animation: bounce 2s infinite ease-in-out;
+}
+
+.brand-highlight {
+  color: var(--primary);
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--shadow);
+  border-radius: 50%;
+  background: var(--panel);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 18px;
+  box-shadow: 0 4px 0 var(--shadow);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.icon-button:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+/* Hero & Car Art */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel);
+  border: 3px solid var(--shadow);
+  border-radius: 24px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 0 var(--shadow);
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 4px;
+  letter-spacing: 0.05em;
+}
+
+.hero h1 {
+  font-size: 32px;
+  line-height: 1.2;
+  margin: 0;
+  font-weight: 700;
+}
+
+.hero em {
+  font-style: normal;
+  color: var(--yellow-dark);
+  background: var(--yellow);
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 2px solid var(--shadow);
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* Cute Cartoon Car */
+.car-art {
+  width: 130px;
+  height: 90px;
+  position: relative;
+}
+
+.car-body {
+  position: absolute;
+  width: 90px;
+  height: 44px;
+  background: var(--yellow);
+  border: 3px solid var(--shadow);
+  border-radius: 18px 24px 12px 12px;
+  left: 20px;
+  top: 25px;
+}
+
+/* Top part of car */
+.car-body:before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: -20px;
+  width: 50px;
+  height: 20px;
+  background: #fef08a; /* Lighter yellow */
+  border: 3px solid var(--shadow);
+  border-bottom: none;
+  border-radius: 16px 20px 0 0;
+}
+
+.car-window {
+  position: absolute;
+  z-index: 1;
+  left: 24px;
+  top: -14px;
+  width: 20px;
+  height: 11px;
+  background: #bae6fd; /* Glass blue */
+  border: 2px solid var(--shadow);
+  border-radius: 8px 10px 0 0;
+}
+
+.car-light {
+  position: absolute;
+  right: 4px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  background: var(--danger);
+  border: 2px solid var(--shadow);
+  border-radius: 50%;
+  animation: blink 0.8s infinite alternate;
+}
+
+/* Cute smiley face on the car */
+.car-smile {
+  position: absolute;
+  right: 18px;
+  top: 20px;
+  width: 12px;
+  height: 6px;
+  border: 2.5px solid var(--shadow);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+}
+
+.wheel {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: #334155;
+  border: 3px solid var(--shadow);
+  border-radius: 50%;
+  top: 54px;
+  z-index: 2;
+}
+
+.wheel:after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  top: 6px;
+  left: 6px;
+}
+
+.wheel-left {
+  left: 32px;
+}
+
+.wheel-right {
+  right: 32px;
+}
+
+/* Signal / Wireless wave */
+.signal {
+  position: absolute;
+  border: 3px solid var(--primary);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: rotate(45deg);
+}
+
+.signal-a {
+  width: 24px;
+  height: 24px;
+  left: -2px;
+  top: 10px;
+  animation: pulse-wave 1.5s infinite linear;
+}
+
+.signal-b {
+  width: 40px;
+  height: 40px;
+  left: -10px;
+  top: 2px;
+  opacity: 0.5;
+  animation: pulse-wave 1.5s infinite linear 0.5s;
+}
+
+/* Connection Card */
+.connection-card {
+  background: var(--panel);
+  border: 3px solid var(--shadow);
+  border-radius: 24px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 6px 0 var(--shadow);
+}
+
+.connection-copy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 3px solid var(--shadow);
+  display: inline-block;
+}
+
+.status-dot.connected {
+  background: var(--success);
+  animation: pulse-green 1.2s infinite alternate;
+}
+
+.label {
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.connection-state {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.connect-button {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border: 3px solid var(--shadow);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--shadow);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-family: inherit;
+}
+
+.connect-button:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+/* Control Panel */
+.control-panel {
+  background: var(--panel);
+  border: 3px solid var(--shadow);
+  border-radius: 24px;
+  padding: 24px 20px;
+  box-shadow: 0 8px 0 var(--shadow);
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 3px dashed var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.command-readout {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--panel-2);
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--shadow);
+}
+
+/* D-Pad / Controller Grid */
+.controller {
+  margin: 0 auto 20px;
+  width: 280px;
+  height: 280px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.control-button {
+  background: var(--panel-2);
+  border: 3px solid var(--shadow);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 6px 0 var(--shadow);
+  cursor: pointer;
+  transition: transform 0.05s, box-shadow 0.05s;
+  user-select: none;
+  touch-action: none;
+  font-family: inherit;
+}
+
+.control-button span {
+  font-size: 32px;
+  line-height: 1;
+  color: var(--primary);
+}
+
+.control-button small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* Active states for buttons */
+.control-button:active,
+.control-button.active {
+  transform: translateY(6px);
+  box-shadow: none;
+  background: var(--yellow);
+}
+
+.control-button:active span,
+.control-button.active span {
+  color: var(--shadow);
+}
+
+/* Special button styles */
+.up { grid-column: 2; }
+.left { grid-column: 1; grid-row: 2; }
+.right { grid-column: 3; grid-row: 2; }
+.down { grid-column: 2; grid-row: 3; }
+
+.stop {
+  grid-column: 2;
+  grid-row: 2;
+  background: #fee2e2; /* Light red */
+}
+
+.stop span {
+  color: var(--danger);
+}
+
+.stop:active,
+.stop.active {
+  background: var(--danger);
+}
+
+.stop:active span,
+.stop.active span {
+  color: #ffffff;
+}
+
+/* Hint */
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+  background: var(--panel-2);
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px dashed var(--line);
+}
+
+.hint span {
+  display: inline-grid;
+  place-items: center;
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  border-radius: 50%;
+  font-size: 11px;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+}
+
+/* Footer info */
+footer {
+  margin-top: auto;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Help Dialog */
+dialog {
+  width: min(90%, 380px);
+  background: var(--panel);
+  color: var(--ink);
+  border: 3px solid var(--shadow);
+  border-radius: 24px;
+  padding: 24px;
+  line-height: 1.6;
+  box-shadow: 0 10px 0 var(--shadow);
+  font-family: inherit;
+}
+
+dialog::backdrop {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.dialog-close {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  background: var(--panel-2);
+  border: 2px solid var(--shadow);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+dialog h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+dialog p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes blink {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-wave {
+  0% { transform: rotate(45deg) scale(0.8); opacity: 0.8; }
+  100% { transform: rotate(45deg) scale(1.2); opacity: 0; }
+}
+
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.4); }
+  100% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+
+/* Small screens styling */
+@media (max-width: 380px) {
+  .hero h1 {
+    font-size: 26px;
+  }
+  .car-art {
+    transform: scale(0.85);
+    margin-right: -10px;
+  }
+  .controller {
+    width: 240px;
+    height: 240px;
+    gap: 8px;
+  }
+  .control-button span {
+    font-size: 28px;
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "RC//DRIVE Bluetooth RC Car",
+  "short_name": "RC//DRIVE",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#08111f",
+  "theme_color": "#08111f",
+  "lang": "ko"
+}
