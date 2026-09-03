@@ -79,8 +79,10 @@ async function send(command) {
 
 // HM-10 및 각종 BLE 모듈 호환 쓰기 함수
 async function writeCharacteristic(char, bytes) {
-  // 1. writeValueWithoutResponse (HM-10 표준)
-  if (typeof char.writeValueWithoutResponse === 'function') {
+  const props = char.properties || {};
+
+  // 1. writeWithoutResponse 지원 시 우선 전송 (HM-10 권장)
+  if (props.writeWithoutResponse && typeof char.writeValueWithoutResponse === 'function') {
     try {
       await char.writeValueWithoutResponse(bytes);
       return;
@@ -88,8 +90,9 @@ async function writeCharacteristic(char, bytes) {
       console.warn('writeValueWithoutResponse 실패, fallback 시도:', err);
     }
   }
-  // 2. writeValueWithResponse
-  if (typeof char.writeValueWithResponse === 'function') {
+
+  // 2. write (WithResponse)
+  if (props.write && typeof char.writeValueWithResponse === 'function') {
     try {
       await char.writeValueWithResponse(bytes);
       return;
@@ -97,8 +100,23 @@ async function writeCharacteristic(char, bytes) {
       console.warn('writeValueWithResponse 실패, fallback 시도:', err);
     }
   }
-  // 3. 기존 표준 writeValue
-  await char.writeValue(bytes);
+
+  // 3. 폴백: 사용 가능한 메서드 순차 시도
+  if (typeof char.writeValueWithoutResponse === 'function') {
+    try {
+      await char.writeValueWithoutResponse(bytes);
+      return;
+    } catch (_) {}
+  }
+  if (typeof char.writeValue === 'function') {
+    await char.writeValue(bytes);
+    return;
+  }
+  if (typeof char.writeValueWithResponse === 'function') {
+    await char.writeValueWithResponse(bytes);
+    return;
+  }
+  throw new Error('BLE 기기에 쓰기 권한이 없습니다.');
 }
 
 // USB 시리얼 연결
@@ -166,8 +184,24 @@ async function connectBle() {
     } catch (_) {}
   }
 
+  // 지정 UUID로 못 찾을 경우, 서비스 내의 쓰기 가능한 특성을 자동 감지!
   if (!targetChar) {
-    throw new Error('블루투스 송수신 특성을 찾지 못했습니다.');
+    try {
+      const chars = await targetService.getCharacteristics();
+      for (const c of chars) {
+        if (c.properties.write || c.properties.writeWithoutResponse) {
+          targetChar = c;
+          console.log('쓰기 가능한 특성 자동 감지 성공:', c.uuid);
+          break;
+        }
+      }
+    } catch (err) {
+      console.warn('특성 자동 탐색 실패:', err);
+    }
+  }
+
+  if (!targetChar) {
+    throw new Error('블루투스 송수신 특성(Characteristic)을 찾지 못했습니다.');
   }
 
   state.device = device;
@@ -252,16 +286,24 @@ $('#connectButton').addEventListener('click', async () => {
 });
 
 // 라인트레이싱 시작 버튼 (전진 오른쪽)
-$('#lineStartButton')?.addEventListener('click', (event) => {
-  event.preventDefault();
-  startLineTracing();
-});
+const startBtn = $('#lineStartButton');
+if (startBtn) {
+  startBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    startLineTracing();
+  });
+  startBtn.addEventListener('click', (e) => e.preventDefault());
+}
 
 // 라인트레이싱 종료 버튼 (우회전 아래쪽)
-$('#lineStopButton')?.addEventListener('click', (event) => {
-  event.preventDefault();
-  stopLineTracing();
-});
+const stopLineBtn = $('#lineStopButton');
+if (stopLineBtn) {
+  stopLineBtn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    stopLineTracing();
+  });
+  stopLineBtn.addEventListener('click', (e) => e.preventDefault());
+}
 
 // 방향 조종 버튼 누름 제어 (누르고 있는 동안만 움직이고, 떼면 멈춤)
 document.querySelectorAll('.control-button[data-command]').forEach((button) => {
