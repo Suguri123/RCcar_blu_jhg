@@ -124,15 +124,18 @@ body {
 
 .hero em {
   font-style: normal;
-  font-size: 15px;
-  color: var(--yellow-dark);
+  font-size: 16px;
+  font-weight: 900;
+  color: #000000;
   background: var(--yellow);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 8px;
-  border: 2px solid var(--shadow);
+  border: 2.5px solid var(--shadow);
+  box-shadow: 0 2px 0 var(--shadow);
   display: inline-block;
   margin-top: 6px;
   white-space: nowrap;
+  letter-spacing: -0.02em;
 }
 
 /* Cute Cartoon Car */
