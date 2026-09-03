@@ -20,16 +20,31 @@ let isSending = false;
 let queuedCommand = null;
 
 async function send(command) {
-  const directionMap = { '1': '전진 🔺', '2': '후진 🔻', '4': '좌회전 ◀', '3': '우회전 ▶', '5': '정지 ■' };
-  $('#commandReadout').textContent = `${command === '5' ? '대기 중' : '운전 중'} / ${directionMap[command] || command}`;
+  const directionMap = {
+    '1': '전진 🔺',
+    '2': '후진 🔻',
+    '3': '좌회전 ◀',
+    '4': '우회전 ▶',
+    '5': '정지 ■',
+    '6': '라인트레이싱 시작 〰️',
+    '7': '라인트레이싱 종료 ⏹️',
+  };
+
+  if (command === '6') {
+    $('#commandReadout').textContent = '라인트레이싱 주행 중 〰️';
+  } else if (command === '5' || command === '7') {
+    $('#commandReadout').textContent = '대기 중 / 정지';
+  } else {
+    $('#commandReadout').textContent = `운전 중 / ${directionMap[command] || command}`;
+  }
 
   if (!state.connected) {
     $('#transportLabel').textContent = '블루투스를 먼저 연결해 주세요!';
     return;
   }
 
-  // 정지(5) 명령은 이전 큐를 덮어쓰고 최우선 처리
-  if (command === '5') {
+  // 정지(5) 및 라인트레이싱 종료(7) 명령은 이전 큐를 덮어쓰고 최우선 처리
+  if (command === '5' || command === '7') {
     queuedCommand = null;
   }
 
@@ -162,9 +177,56 @@ async function connectBle() {
   $('#transportLabel').textContent = `블루투스 준비 완료 (${devName})`;
 }
 
+// 라인트레이싱 모드 상태
+let isLineTracing = false;
+
+function updateLineTracingUI(active) {
+  isLineTracing = active;
+  const linetraceBtn = $('#linetraceButton');
+  const linetraceIcon = $('#linetraceIcon');
+  const linetraceLabel = $('#linetraceLabel');
+
+  if (active) {
+    linetraceBtn?.classList.add('active');
+    if (linetraceIcon) linetraceIcon.textContent = '⏹️';
+    if (linetraceLabel) linetraceLabel.textContent = '라인종료';
+    $('#commandReadout').textContent = '라인트레이싱 주행 중 〰️';
+    $('#transportLabel').textContent = '라인트레이싱 모드 동작 중 (종료: 7번/라인버튼)';
+  } else {
+    linetraceBtn?.classList.remove('active');
+    if (linetraceIcon) linetraceIcon.textContent = '〰️';
+    if (linetraceLabel) linetraceLabel.textContent = '라인트레이싱';
+    $('#commandReadout').textContent = '대기 중 / 정지';
+    $('#transportLabel').textContent = '일반 조종 모드로 복귀했습니다.';
+  }
+}
+
+async function toggleLineTracing() {
+  if (!state.connected) {
+    alert('블루투스를 먼저 연결해 주세요! 🔌');
+    return;
+  }
+
+  if (!isLineTracing) {
+    // 6 : 라인트레이싱 모드 시작
+    updateLineTracingUI(true);
+    await send('6');
+  } else {
+    // 7 : 라인트레이싱 모드 종료
+    updateLineTracingUI(false);
+    await send('7');
+  }
+}
+
 // 연결 해제
 async function disconnect() {
-  await send('5');
+  if (isLineTracing) {
+    updateLineTracingUI(false);
+    await send('7');
+  } else {
+    await send('5');
+  }
+
   document.querySelectorAll('.control-button').forEach((btn) => btn.classList.remove('active'));
   if (state.writer) {
     try { state.writer.releaseLock(); } catch (_) {}
@@ -202,16 +264,30 @@ $('#connectButton').addEventListener('click', async () => {
   }
 });
 
-// 버튼 누름 제어 (누르고 있는 동안만 움직이고, 떼면 멈춤)
-document.querySelectorAll('.control-button').forEach((button) => {
+// 라인트레이싱 전용 버튼 클릭 이벤트 (토글 동작)
+$('#linetraceButton')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  toggleLineTracing();
+});
+
+// 방향 조종 버튼 누름 제어 (누르고 있는 동안만 움직이고, 떼면 멈춤)
+document.querySelectorAll('.control-button[data-command]').forEach((button) => {
   const command = button.dataset.command;
 
   const press = (event) => {
     event.preventDefault();
-    if (!command) {
-      alert('라인트레이싱 기능은 준비 중입니다 🚗✨');
+
+    // 라인트레이싱 중에는 1~6 무시됨
+    if (isLineTracing) {
+      if (command === '5') {
+        // 정지 버튼을 누르면 안전하게 7(라인종료) 전송
+        toggleLineTracing();
+      } else {
+        $('#transportLabel').textContent = '라인트레이싱 중입니다! (종료하려면 라인버튼 또는 정지 클릭)';
+      }
       return;
     }
+
     try { button.setPointerCapture(event.pointerId); } catch (_) {}
     button.classList.add('active');
     send(command);
@@ -219,6 +295,8 @@ document.querySelectorAll('.control-button').forEach((button) => {
 
   const release = (event) => {
     event.preventDefault();
+    if (isLineTracing) return;
+
     try { button.releasePointerCapture(event.pointerId); } catch (_) {}
     if (button.classList.contains('active')) {
       button.classList.remove('active');
@@ -234,26 +312,44 @@ document.querySelectorAll('.control-button').forEach((button) => {
   button.addEventListener('contextmenu', (e) => e.preventDefault());
 });
 
-// 키보드 조작 (누르고 있는 동안 이동, 떼면 정지)
+// 키보드 조작 (누르고 있는 동안 이동, 떼면 정지 / 6: 라인시작, 7: 라인종료)
 const keyCommands = {
   ArrowUp: '1', w: '1', W: '1',
   ArrowDown: '2', s: '2', S: '2',
-  ArrowLeft: '4', a: '4', A: '4',
-  ArrowRight: '3', d: '3', D: '3',
+  ArrowLeft: '3', a: '3', A: '3',
+  ArrowRight: '4', d: '4', D: '4',
   ' ': '5',
 };
 
 const activeKeys = new Set();
 
 window.addEventListener('keydown', (event) => {
+  if (event.key === '6') {
+    event.preventDefault();
+    if (!isLineTracing) toggleLineTracing();
+    return;
+  }
+  if (event.key === '7' || event.key === 'Escape') {
+    event.preventDefault();
+    if (isLineTracing) toggleLineTracing();
+    return;
+  }
+
   const command = keyCommands[event.key];
   if (!command || activeKeys.has(event.key)) return;
   event.preventDefault();
+
+  if (isLineTracing) {
+    if (command === '5') toggleLineTracing();
+    return;
+  }
+
   activeKeys.add(event.key);
   send(command);
 });
 
 window.addEventListener('keyup', (event) => {
+  if (isLineTracing) return;
   if (!activeKeys.delete(event.key)) return;
   event.preventDefault();
   send('5');
@@ -261,4 +357,10 @@ window.addEventListener('keyup', (event) => {
 
 $('#helpButton').addEventListener('click', () => $('#helpDialog').showModal());
 $('#closeHelp').addEventListener('click', () => $('#helpDialog').close());
-window.addEventListener('blur', () => send('5'));
+window.addEventListener('blur', () => {
+  if (isLineTracing) {
+    toggleLineTracing();
+  } else {
+    send('5');
+  }
+});

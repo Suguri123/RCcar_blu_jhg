@@ -449,6 +449,17 @@ body {
   background: var(--yellow-dark);
 }
 
+.linetrace.active {
+  background: var(--danger) !important;
+  transform: translateY(4px);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
+}
+
+.linetrace.active span,
+.linetrace.active small {
+  color: #ffffff !important;
+}
+
 .left { grid-column: 1; grid-row: 2; }
 .right { grid-column: 3; grid-row: 2; }
 .down { grid-column: 2; grid-row: 3; }
