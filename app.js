@@ -112,6 +112,8 @@ async function connectBle() {
     setConnection(false);
     state.device = null;
     state.characteristic = null;
+    currentRunningCommand = '5';
+    setActiveButton('5');
     $('#transportLabel').textContent = '블루투스 연결이 끊어졌습니다.';
   });
 
@@ -158,6 +160,8 @@ async function connectBle() {
 
 // 연결 해제
 async function disconnect() {
+  currentRunningCommand = '5';
+  setActiveButton('5');
   await send('5');
   if (state.writer) {
     try { state.writer.releaseLock(); } catch (_) {}
@@ -195,42 +199,45 @@ $('#connectButton').addEventListener('click', async () => {
   }
 });
 
-// 터치 및 마우스 포인터 이벤트 (손가락 미끄러짐 방지용 Pointer Capture 적용)
+// 현재 주행 상태 관리 ('5' = 정지)
+let currentRunningCommand = '5';
+
+function setActiveButton(command) {
+  document.querySelectorAll('.control-button').forEach((btn) => {
+    if (btn.dataset.command === command && command !== '5') {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function handleCommandClick(command) {
+  if (command === '5') {
+    // 가운데 정지 버튼 클릭 시 즉시 정지
+    currentRunningCommand = '5';
+    setActiveButton('5');
+    send('5');
+  } else if (currentRunningCommand === command) {
+    // 이미 달리고 있는 방향을 다시 누르면 정지 (토글 기능)
+    currentRunningCommand = '5';
+    setActiveButton('5');
+    send('5');
+  } else {
+    // 새로운 방향 클릭 시 해당 방향으로 계속 주행
+    currentRunningCommand = command;
+    setActiveButton(command);
+    send(command);
+  }
+}
+
+// 버튼 클릭 이벤트 (클릭 시 계속 동작)
 document.querySelectorAll('.control-button').forEach((button) => {
   const command = button.dataset.command;
-
-  const press = (event) => {
+  button.addEventListener('click', (event) => {
     event.preventDefault();
-    button.classList.add('active');
-    send(command);
-  };
-
-  const release = (event) => {
-    event.preventDefault();
-    if (button.classList.contains('active')) {
-      button.classList.remove('active');
-      if (command !== '5') {
-        send('5');
-      }
-    }
-  };
-
-  button.addEventListener('pointerdown', (event) => {
-    try { button.setPointerCapture(event.pointerId); } catch (_) {}
-    press(event);
+    handleCommandClick(command);
   });
-
-  button.addEventListener('pointerup', (event) => {
-    try { button.releasePointerCapture(event.pointerId); } catch (_) {}
-    release(event);
-  });
-
-  button.addEventListener('pointercancel', (event) => {
-    try { button.releasePointerCapture(event.pointerId); } catch (_) {}
-    release(event);
-  });
-
-  button.addEventListener('contextmenu', (e) => e.preventDefault());
 });
 
 // 키보드 조작 (WASD, 방향키, 스페이스바=정지)
@@ -242,22 +249,17 @@ const keyCommands = {
   ' ': '5',
 };
 
-const activeKeys = new Set();
-
 window.addEventListener('keydown', (event) => {
   const command = keyCommands[event.key];
-  if (!command || activeKeys.has(event.key)) return;
+  if (!command) return;
   event.preventDefault();
-  activeKeys.add(event.key);
-  send(command);
-});
-
-window.addEventListener('keyup', (event) => {
-  if (!activeKeys.delete(event.key)) return;
-  event.preventDefault();
-  send('5');
+  handleCommandClick(command);
 });
 
 $('#helpButton').addEventListener('click', () => $('#helpDialog').showModal());
 $('#closeHelp').addEventListener('click', () => $('#helpDialog').close());
-window.addEventListener('blur', () => send('5'));
+window.addEventListener('blur', () => {
+  if (currentRunningCommand !== '5') {
+    handleCommandClick('5');
+  }
+});
