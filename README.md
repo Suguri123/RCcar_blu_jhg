@@ -18,8 +18,8 @@ python -m http.server 8000
 |---|---|
 | 전진 | `1` |
 | 후진 | `2` |
-| 좌회전 | `3` |
-| 우회전 | `4` |
+| 좌회전 | `4` |
+| 우회전 | `3` |
 | 정지 | `5` |
 
 HC-06은 Bluetooth Classic(SPP)라서 Android/iOS 일반 브라우저의 Web Bluetooth로는 직접 연결되지 않습니다. 휴대폰에서 사용하려면 이 UI를 네이티브 Android 앱(WebView + BluetoothSocket)으로 감싸거나, BLE 모듈(HM-10 등)로 교체해야 합니다. 화면에는 BLE UART 표준 UUID(`FFE0`/`FFE1`) 연결도 포함되어 있습니다.

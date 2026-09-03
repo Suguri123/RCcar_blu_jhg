@@ -20,7 +20,7 @@ let isSending = false;
 let queuedCommand = null;
 
 async function send(command) {
-  const directionMap = { '1': '전진 🔺', '2': '후진 🔻', '3': '좌회전 ◀', '4': '우회전 ▶', '5': '정지 ■' };
+  const directionMap = { '1': '전진 🔺', '2': '후진 🔻', '4': '좌회전 ◀', '3': '우회전 ▶', '5': '정지 ■' };
   $('#commandReadout').textContent = `${command === '5' ? '대기 중' : '운전 중'} / ${directionMap[command] || command}`;
 
   if (!state.connected) {
@@ -238,8 +238,8 @@ document.querySelectorAll('.control-button').forEach((button) => {
 const keyCommands = {
   ArrowUp: '1', w: '1', W: '1',
   ArrowDown: '2', s: '2', S: '2',
-  ArrowLeft: '3', a: '3', A: '3',
-  ArrowRight: '4', d: '4', D: '4',
+  ArrowLeft: '4', a: '4', A: '4',
+  ArrowRight: '3', d: '3', D: '3',
   ' ': '5',
 };
 
