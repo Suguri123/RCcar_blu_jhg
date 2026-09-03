@@ -23,8 +23,8 @@ async function send(command) {
   const directionMap = {
     '1': '전진 🔺',
     '2': '후진 🔻',
-    '3': '좌회전 ◀',
-    '4': '우회전 ▶',
+    '4': '좌회전 ◀',
+    '3': '우회전 ▶',
     '5': '정지 ■',
     '6': '라인트레이싱 시작 〰️',
     '7': '라인트레이싱 종료 ⏹️',
@@ -351,8 +351,8 @@ document.querySelectorAll('.control-button[data-command]').forEach((button) => {
 const keyCommands = {
   ArrowUp: '1', w: '1', W: '1',
   ArrowDown: '2', s: '2', S: '2',
-  ArrowLeft: '3', a: '3', A: '3',
-  ArrowRight: '4', d: '4', D: '4',
+  ArrowLeft: '4', a: '4', A: '4',
+  ArrowRight: '3', d: '3', D: '3',
   ' ': '5',
 };
 
