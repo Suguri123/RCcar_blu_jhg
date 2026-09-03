@@ -437,30 +437,25 @@ body {
   color: #ffffff;
 }
 
-/* Hint */
-.hint {
-  color: var(--muted);
-  font-size: 13px;
-  text-align: center;
-  margin: 0;
-  line-height: 1.5;
+/* Browser Guide */
+.browser-guide {
+  margin-top: 14px;
   background: var(--panel-2);
-  padding: 10px;
-  border-radius: 12px;
   border: 2px dashed var(--line);
+  border-radius: 14px;
+  padding: 10px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.hint span {
-  display: inline-grid;
-  place-items: center;
-  background: var(--primary);
-  color: white;
-  font-weight: 700;
-  border-radius: 50%;
-  font-size: 11px;
-  width: 18px;
-  height: 18px;
-  margin-right: 6px;
+.browser-guide p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: -0.01em;
 }
 
 /* Footer info */
