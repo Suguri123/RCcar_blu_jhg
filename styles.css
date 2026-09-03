@@ -360,7 +360,7 @@ body {
 
 /* D-Pad / Controller Grid */
 .controller {
-  margin: 0 auto 12px;
+  margin: 0 auto;
   width: 280px;
   height: 280px;
   display: grid;

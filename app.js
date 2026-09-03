@@ -9,7 +9,7 @@ function setConnection(connected, name = '연결 안 됨') {
 }
 
 async function send(command) {
-  const directionMap = { 'F': '앞으로 🔺', 'B': '뒤로 🔻', 'L': '왼쪽 ◀', 'R': '오른쪽 ▶', 'S': '멈춤 ■' };
+  const directionMap = { 'F': '전진 🔺', 'B': '후진 🔻', 'L': '좌회전 ◀', 'R': '우회전 ▶', 'S': '정지 ■' };
   $('#commandReadout').textContent = `${command === 'S' ? '대기 중' : '운전 중'} / ${directionMap[command] || command}`;
   try {
     const bytes = new TextEncoder().encode(command);
