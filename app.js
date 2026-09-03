@@ -117,8 +117,7 @@ async function connectBle() {
     setConnection(false);
     state.device = null;
     state.characteristic = null;
-    currentRunningCommand = '5';
-    setActiveButton('5');
+    document.querySelectorAll('.control-button').forEach(btn => btn.classList.remove('active'));
     $('#transportLabel').textContent = '블루투스 연결이 끊어졌습니다.';
   });
 
@@ -165,9 +164,8 @@ async function connectBle() {
 
 // 연결 해제
 async function disconnect() {
-  currentRunningCommand = '5';
-  setActiveButton('5');
   await send('5');
+  document.querySelectorAll('.control-button').forEach((btn) => btn.classList.remove('active'));
   if (state.writer) {
     try { state.writer.releaseLock(); } catch (_) {}
     state.writer = null;
@@ -204,75 +202,39 @@ $('#connectButton').addEventListener('click', async () => {
   }
 });
 
-// 현재 주행 상태 관리 ('5' = 정지)
-let currentRunningCommand = '5';
-
-function setActiveButton(command) {
-  document.querySelectorAll('.control-button').forEach((btn) => {
-    if (btn.dataset.command === command && command !== '5') {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
-}
-
-// 긴급 정지 전송 함수 (패킷 유실 방지 2회 연속 전송)
-async function sendEmergencyStop() {
-  queuedCommand = null;
-  await send('5');
-  setTimeout(() => {
-    if (currentRunningCommand === '5') {
-      send('5');
-    }
-  }, 80);
-}
-
-async function handleCommandClick(command) {
-  if (command === '5') {
-    // 🛑 가운데 정지 버튼 즉시 정지
-    currentRunningCommand = '5';
-    setActiveButton('5');
-
-    // 시각 피드백: 정지 버튼 눌림 효과
-    const stopBtn = document.querySelector('.control-button.stop');
-    if (stopBtn) {
-      stopBtn.classList.add('active');
-      setTimeout(() => stopBtn.classList.remove('active'), 250);
-    }
-
-    await sendEmergencyStop();
-  } else if (currentRunningCommand === command) {
-    // 이미 달리고 있는 방향을 다시 누르면 정지 (토글 기능)
-    currentRunningCommand = '5';
-    setActiveButton('5');
-    await sendEmergencyStop();
-  } else {
-    // 새로운 방향 클릭 시 해당 방향으로 계속 주행
-    currentRunningCommand = command;
-    setActiveButton(command);
-    await send(command);
-  }
-}
-
-// 버튼 이벤트: 모바일 터치(pointerdown) 및 마우스 클릭 즉시 반응 (0ms 반응성)
+// 버튼 누름 제어 (누르고 있는 동안만 움직이고, 떼면 멈춤)
 document.querySelectorAll('.control-button').forEach((button) => {
   const command = button.dataset.command;
 
-  const onAction = (event) => {
+  const press = (event) => {
     event.preventDefault();
     if (!command) {
       alert('라인트레이싱 기능은 준비 중입니다 🚗✨');
       return;
     }
-    handleCommandClick(command);
+    try { button.setPointerCapture(event.pointerId); } catch (_) {}
+    button.classList.add('active');
+    send(command);
   };
 
-  button.addEventListener('pointerdown', onAction);
-  button.addEventListener('click', (e) => e.preventDefault());
+  const release = (event) => {
+    event.preventDefault();
+    try { button.releasePointerCapture(event.pointerId); } catch (_) {}
+    if (button.classList.contains('active')) {
+      button.classList.remove('active');
+      if (command !== '5') {
+        send('5');
+      }
+    }
+  };
+
+  button.addEventListener('pointerdown', press);
+  button.addEventListener('pointerup', release);
+  button.addEventListener('pointercancel', release);
+  button.addEventListener('contextmenu', (e) => e.preventDefault());
 });
 
-// 키보드 조작 (WASD, 방향키, 스페이스바=정지)
+// 키보드 조작 (누르고 있는 동안 이동, 떼면 정지)
 const keyCommands = {
   ArrowUp: '1', w: '1', W: '1',
   ArrowDown: '2', s: '2', S: '2',
@@ -281,17 +243,22 @@ const keyCommands = {
   ' ': '5',
 };
 
+const activeKeys = new Set();
+
 window.addEventListener('keydown', (event) => {
   const command = keyCommands[event.key];
-  if (!command) return;
+  if (!command || activeKeys.has(event.key)) return;
   event.preventDefault();
-  handleCommandClick(command);
+  activeKeys.add(event.key);
+  send(command);
+});
+
+window.addEventListener('keyup', (event) => {
+  if (!activeKeys.delete(event.key)) return;
+  event.preventDefault();
+  send('5');
 });
 
 $('#helpButton').addEventListener('click', () => $('#helpDialog').showModal());
 $('#closeHelp').addEventListener('click', () => $('#helpDialog').close());
-window.addEventListener('blur', () => {
-  if (currentRunningCommand !== '5') {
-    handleCommandClick('5');
-  }
-});
+window.addEventListener('blur', () => send('5'));
