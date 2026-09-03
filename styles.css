@@ -413,6 +413,42 @@ body {
 
 /* Special button styles */
 .up { grid-column: 2; }
+.linetrace {
+  grid-column: 3;
+  grid-row: 1;
+  background: var(--yellow);
+  align-self: center;
+  justify-self: center;
+  width: 82%;
+  height: 82%;
+  border: 2.5px solid var(--shadow);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 var(--shadow);
+  cursor: pointer;
+  padding: 4px;
+  gap: 2px;
+}
+
+.linetrace span {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--shadow);
+}
+
+.linetrace small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.linetrace:active {
+  transform: translateY(4px);
+  box-shadow: none;
+  background: var(--yellow-dark);
+}
+
 .left { grid-column: 1; grid-row: 2; }
 .right { grid-column: 3; grid-row: 2; }
 .down { grid-column: 2; grid-row: 3; }
@@ -552,5 +588,11 @@ dialog p {
   }
   .control-button span {
     font-size: 28px;
+  }
+  .linetrace span {
+    font-size: 16px;
+  }
+  .linetrace small {
+    font-size: 8.5px;
   }
 }

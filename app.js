@@ -236,6 +236,10 @@ document.querySelectorAll('.control-button').forEach((button) => {
   const command = button.dataset.command;
   button.addEventListener('click', (event) => {
     event.preventDefault();
+    if (!command) {
+      alert('라인트레이싱 기능은 준비 중입니다 🚗✨');
+      return;
+    }
     handleCommandClick(command);
   });
 });
