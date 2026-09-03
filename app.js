@@ -180,49 +180,36 @@ async function connectBle() {
 // 라인트레이싱 모드 상태
 let isLineTracing = false;
 
-function updateLineTracingUI(active) {
-  isLineTracing = active;
-  const linetraceBtn = $('#linetraceButton');
-  const linetraceIcon = $('#linetraceIcon');
-  const linetraceLabel = $('#linetraceLabel');
-
-  if (active) {
-    linetraceBtn?.classList.add('active');
-    if (linetraceIcon) linetraceIcon.textContent = '⏹️';
-    if (linetraceLabel) linetraceLabel.textContent = '라인종료';
-    $('#commandReadout').textContent = '라인트레이싱 주행 중 〰️';
-    $('#transportLabel').textContent = '라인트레이싱 모드 동작 중 (종료: 7번/라인버튼)';
-  } else {
-    linetraceBtn?.classList.remove('active');
-    if (linetraceIcon) linetraceIcon.textContent = '〰️';
-    if (linetraceLabel) linetraceLabel.textContent = '라인트레이싱';
-    $('#commandReadout').textContent = '대기 중 / 정지';
-    $('#transportLabel').textContent = '일반 조종 모드로 복귀했습니다.';
-  }
-}
-
-async function toggleLineTracing() {
+async function startLineTracing() {
   if (!state.connected) {
     alert('블루투스를 먼저 연결해 주세요! 🔌');
     return;
   }
+  isLineTracing = true;
+  $('#lineStartButton')?.classList.add('active');
+  $('#commandReadout').textContent = '라인트레이싱 주행 중 〰️';
+  $('#transportLabel').textContent = '라인트레이싱 모드 동작 중 (종료: 라인종료 버튼)';
+  await send('6');
+}
 
-  if (!isLineTracing) {
-    // 6 : 라인트레이싱 모드 시작
-    updateLineTracingUI(true);
-    await send('6');
-  } else {
-    // 7 : 라인트레이싱 모드 종료
-    updateLineTracingUI(false);
-    await send('7');
+async function stopLineTracing() {
+  if (!state.connected) return;
+  isLineTracing = false;
+  $('#lineStartButton')?.classList.remove('active');
+  const stopBtn = $('#lineStopButton');
+  if (stopBtn) {
+    stopBtn.classList.add('active');
+    setTimeout(() => stopBtn.classList.remove('active'), 250);
   }
+  $('#commandReadout').textContent = '대기 중 / 정지';
+  $('#transportLabel').textContent = '라인트레이싱 종료 -> 일반 조종 복귀';
+  await send('7');
 }
 
 // 연결 해제
 async function disconnect() {
   if (isLineTracing) {
-    updateLineTracingUI(false);
-    await send('7');
+    await stopLineTracing();
   } else {
     await send('5');
   }
@@ -264,10 +251,16 @@ $('#connectButton').addEventListener('click', async () => {
   }
 });
 
-// 라인트레이싱 전용 버튼 클릭 이벤트 (토글 동작)
-$('#linetraceButton')?.addEventListener('click', (event) => {
+// 라인트레이싱 시작 버튼 (전진 오른쪽)
+$('#lineStartButton')?.addEventListener('click', (event) => {
   event.preventDefault();
-  toggleLineTracing();
+  startLineTracing();
+});
+
+// 라인트레이싱 종료 버튼 (우회전 아래쪽)
+$('#lineStopButton')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  stopLineTracing();
 });
 
 // 방향 조종 버튼 누름 제어 (누르고 있는 동안만 움직이고, 떼면 멈춤)
@@ -281,9 +274,9 @@ document.querySelectorAll('.control-button[data-command]').forEach((button) => {
     if (isLineTracing) {
       if (command === '5') {
         // 정지 버튼을 누르면 안전하게 7(라인종료) 전송
-        toggleLineTracing();
+        stopLineTracing();
       } else {
-        $('#transportLabel').textContent = '라인트레이싱 중입니다! (종료하려면 라인버튼 또는 정지 클릭)';
+        $('#transportLabel').textContent = '라인트레이싱 중입니다! (종료하려면 라인종료 버튼 클릭)';
       }
       return;
     }
@@ -326,12 +319,12 @@ const activeKeys = new Set();
 window.addEventListener('keydown', (event) => {
   if (event.key === '6') {
     event.preventDefault();
-    if (!isLineTracing) toggleLineTracing();
+    if (!isLineTracing) startLineTracing();
     return;
   }
   if (event.key === '7' || event.key === 'Escape') {
     event.preventDefault();
-    if (isLineTracing) toggleLineTracing();
+    if (isLineTracing) stopLineTracing();
     return;
   }
 
@@ -340,7 +333,7 @@ window.addEventListener('keydown', (event) => {
   event.preventDefault();
 
   if (isLineTracing) {
-    if (command === '5') toggleLineTracing();
+    if (command === '5') stopLineTracing();
     return;
   }
 
@@ -359,7 +352,7 @@ $('#helpButton').addEventListener('click', () => $('#helpDialog').showModal());
 $('#closeHelp').addEventListener('click', () => $('#helpDialog').close());
 window.addEventListener('blur', () => {
   if (isLineTracing) {
-    toggleLineTracing();
+    stopLineTracing();
   } else {
     send('5');
   }

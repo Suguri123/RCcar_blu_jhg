@@ -413,7 +413,7 @@ body {
 
 /* Special button styles */
 .up { grid-column: 2; }
-.linetrace {
+.linetrace-start {
   grid-column: 3;
   grid-row: 1;
   background: var(--yellow);
@@ -429,13 +429,13 @@ body {
   gap: 2px;
 }
 
-.linetrace span {
+.linetrace-start span {
   font-size: 20px;
   line-height: 1;
   color: var(--shadow);
 }
 
-.linetrace small {
+.linetrace-start small {
   font-size: 10px;
   font-weight: 700;
   color: var(--ink);
@@ -443,20 +443,55 @@ body {
   white-space: nowrap;
 }
 
-.linetrace:active {
+.linetrace-start:active,
+.linetrace-start.active {
   transform: translateY(4px);
   box-shadow: none;
   background: var(--yellow-dark);
 }
 
-.linetrace.active {
-  background: var(--danger) !important;
-  transform: translateY(4px);
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.4);
+/* 라인트레이싱 종료 버튼 (3행 3열: 오른쪽 화살표 아래) */
+.linetrace-stop {
+  grid-column: 3;
+  grid-row: 3;
+  background: #fee2e2;
+  align-self: center;
+  justify-self: center;
+  width: 82%;
+  height: 82%;
+  border: 2.5px solid #f87171;
+  border-radius: 16px;
+  box-shadow: 0 4px 0 #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  gap: 2px;
 }
 
-.linetrace.active span,
-.linetrace.active small {
+.linetrace-stop span {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--danger);
+}
+
+.linetrace-stop small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--danger);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.linetrace-stop:active,
+.linetrace-stop.active {
+  transform: translateY(4px);
+  box-shadow: none;
+  background: var(--danger) !important;
+}
+
+.linetrace-stop:active span,
+.linetrace-stop.active span,
+.linetrace-stop:active small,
+.linetrace-stop.active small {
   color: #ffffff !important;
 }
 
