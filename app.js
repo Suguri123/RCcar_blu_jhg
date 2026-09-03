@@ -20,8 +20,8 @@ let isSending = false;
 let queuedCommand = null;
 
 async function send(command) {
-  const directionMap = { 'F': '전진 🔺', 'B': '후진 🔻', 'L': '좌회전 ◀', 'R': '우회전 ▶', 'S': '정지 ■' };
-  $('#commandReadout').textContent = `${command === 'S' ? '대기 중' : '운전 중'} / ${directionMap[command] || command}`;
+  const directionMap = { '1': '전진 🔺', '2': '후진 🔻', '3': '좌회전 ◀', '4': '우회전 ▶', '5': '정지 ■' };
+  $('#commandReadout').textContent = `${command === '5' ? '대기 중' : '운전 중'} / ${directionMap[command] || command}`;
 
   if (!state.connected) {
     $('#transportLabel').textContent = '블루투스를 먼저 연결해 주세요!';
@@ -158,7 +158,7 @@ async function connectBle() {
 
 // 연결 해제
 async function disconnect() {
-  await send('S');
+  await send('5');
   if (state.writer) {
     try { state.writer.releaseLock(); } catch (_) {}
     state.writer = null;
@@ -209,8 +209,8 @@ document.querySelectorAll('.control-button').forEach((button) => {
     event.preventDefault();
     if (button.classList.contains('active')) {
       button.classList.remove('active');
-      if (command !== 'S') {
-        send('S');
+      if (command !== '5') {
+        send('5');
       }
     }
   };
@@ -235,11 +235,11 @@ document.querySelectorAll('.control-button').forEach((button) => {
 
 // 키보드 조작 (WASD, 방향키, 스페이스바=정지)
 const keyCommands = {
-  ArrowUp: 'F', w: 'F', W: 'F',
-  ArrowDown: 'B', s: 'B', S: 'B',
-  ArrowLeft: 'L', a: 'L', A: 'L',
-  ArrowRight: 'R', d: 'R', D: 'R',
-  ' ': 'S',
+  ArrowUp: '1', w: '1', W: '1',
+  ArrowDown: '2', s: '2', S: '2',
+  ArrowLeft: '3', a: '3', A: '3',
+  ArrowRight: '4', d: '4', D: '4',
+  ' ': '5',
 };
 
 const activeKeys = new Set();
@@ -255,9 +255,9 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => {
   if (!activeKeys.delete(event.key)) return;
   event.preventDefault();
-  send('S');
+  send('5');
 });
 
 $('#helpButton').addEventListener('click', () => $('#helpDialog').showModal());
 $('#closeHelp').addEventListener('click', () => $('#helpDialog').close());
-window.addEventListener('blur', () => send('S'));
+window.addEventListener('blur', () => send('5'));
