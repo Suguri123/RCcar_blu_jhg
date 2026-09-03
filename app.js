@@ -28,6 +28,11 @@ async function send(command) {
     return;
   }
 
+  // 정지(5) 명령은 이전 큐를 덮어쓰고 최우선 처리
+  if (command === '5') {
+    queuedCommand = null;
+  }
+
   if (isSending) {
     queuedCommand = command;
     return;
@@ -39,10 +44,10 @@ async function send(command) {
 
     if (state.writer) {
       await state.writer.write(bytes);
-      $('#transportLabel').textContent = `전송 완료: ${command}`;
+      $('#transportLabel').textContent = `전송 완료: ${command} (${directionMap[command] || ''})`;
     } else if (state.characteristic) {
       await writeCharacteristic(state.characteristic, bytes);
-      $('#transportLabel').textContent = `전송 완료: ${command} (${state.device?.name || 'BLE'})`;
+      $('#transportLabel').textContent = `전송 완료: ${command} (${directionMap[command] || ''})`;
     }
   } catch (error) {
     console.error('명령 전송 실패:', error);
@@ -212,36 +217,59 @@ function setActiveButton(command) {
   });
 }
 
-function handleCommandClick(command) {
+// 긴급 정지 전송 함수 (패킷 유실 방지 2회 연속 전송)
+async function sendEmergencyStop() {
+  queuedCommand = null;
+  await send('5');
+  setTimeout(() => {
+    if (currentRunningCommand === '5') {
+      send('5');
+    }
+  }, 80);
+}
+
+async function handleCommandClick(command) {
   if (command === '5') {
-    // 가운데 정지 버튼 클릭 시 즉시 정지
+    // 🛑 가운데 정지 버튼 즉시 정지
     currentRunningCommand = '5';
     setActiveButton('5');
-    send('5');
+
+    // 시각 피드백: 정지 버튼 눌림 효과
+    const stopBtn = document.querySelector('.control-button.stop');
+    if (stopBtn) {
+      stopBtn.classList.add('active');
+      setTimeout(() => stopBtn.classList.remove('active'), 250);
+    }
+
+    await sendEmergencyStop();
   } else if (currentRunningCommand === command) {
     // 이미 달리고 있는 방향을 다시 누르면 정지 (토글 기능)
     currentRunningCommand = '5';
     setActiveButton('5');
-    send('5');
+    await sendEmergencyStop();
   } else {
     // 새로운 방향 클릭 시 해당 방향으로 계속 주행
     currentRunningCommand = command;
     setActiveButton(command);
-    send(command);
+    await send(command);
   }
 }
 
-// 버튼 클릭 이벤트 (클릭 시 계속 동작)
+// 버튼 이벤트: 모바일 터치(pointerdown) 및 마우스 클릭 즉시 반응 (0ms 반응성)
 document.querySelectorAll('.control-button').forEach((button) => {
   const command = button.dataset.command;
-  button.addEventListener('click', (event) => {
+
+  const onAction = (event) => {
     event.preventDefault();
     if (!command) {
       alert('라인트레이싱 기능은 준비 중입니다 🚗✨');
       return;
     }
     handleCommandClick(command);
-  });
+  };
+
+  button.addEventListener('pointerdown', onAction);
+  button.addEventListener('click', (e) => e.preventDefault());
 });
 
 // 키보드 조작 (WASD, 방향키, 스페이스바=정지)

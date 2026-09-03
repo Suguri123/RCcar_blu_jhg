@@ -465,12 +465,19 @@ body {
 
 .stop:active,
 .stop.active {
-  background: var(--danger);
+  background: var(--danger) !important;
+  transform: translateY(6px);
+  box-shadow: none;
 }
 
 .stop:active span,
 .stop.active span {
-  color: #ffffff;
+  color: #ffffff !important;
+}
+
+.stop:active small,
+.stop.active small {
+  color: #ffffff !important;
 }
 
 /* Browser Guide */
